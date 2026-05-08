@@ -45,7 +45,7 @@
   .partner-tab.active{background:var(--blue);color:white;border-color:var(--blue);}
   .partner-tab.done{background:var(--green-light);color:var(--green);border-color:var(--green);}
   .image-wrapper{border-radius:12px;overflow:hidden;margin-bottom:.5rem;background:var(--bg);border:1.5px solid var(--border);max-height:280px;display:flex;align-items:center;justify-content:center;min-height:160px;}
-  .image-wrapper img{width:100%;height:280px;object-fit:cover;display:block;}
+  .image-wrapper img{width:100%;max-height:280px;object-fit:cover;display:block;}
   .no-image{padding:2rem;text-align:center;color:var(--muted);font-size:.9rem;}
   .image-credit{font-size:.72rem;color:var(--muted);text-align:right;margin-bottom:1rem;}
   .image-credit a{color:var(--muted);}
@@ -156,27 +156,391 @@
 </div>
 
 <script>
+// All images are loaded lazily via Wikipedia's pageimages API (CORS-safe, origin=* supported).
+// This avoids hotlinking problems: we request a fresh thumbnail URL at runtime.
+
 const CATALOGUE = {
   topics: [
     {
       name: "New York City & National Parks",
       subtopics: [
-        { name: "Grand Canyon", wikiTitle: "Grand Canyon", describePrompt: "Describe what you can see in the picture. What colours, shapes and landscapes can you spot?", discussPrompt: "Would you like to visit the Grand Canyon? What would you do there and why is it important to protect national parks like this?" },
-        { name: "Death Valley", wikiTitle: "Death Valley National Park", describePrompt: "Describe the landscape in the picture. What makes this place look extreme or unusual?", discussPrompt: "Death Valley is one of the hottest places on Earth. Why do you think people visit dangerous places like this?" },
-        { name: "Immigrants in NYC", wikiTitle: "Ellis Island", describePrompt: "Describe what you can see in the picture. Who do you think the people are and where might they be going?", discussPrompt: "New York City was built by immigrants. What are the advantages of living in such a multicultural city?" },
-        { name: "Ground Zero Memorial", wikiTitle: "National September 11 Memorial & Museum", describePrompt: "Describe what you see in the picture. What atmosphere does it have?", discussPrompt: "Why is it important to remember tragic historical events?" },
-        { name: "Empire State Building", wikiTitle: "Empire State Building", describePrompt: "Describe what you can see in the picture. What stands out most about this building?", discussPrompt: "Why do you think people are so fascinated by very tall buildings?" },
-        { name: "Little Italy & Chinatown", wikiTitle: "Little Italy, Manhattan", describePrompt: "Describe what you see in the picture. What details tell you about the culture?", discussPrompt: "Why is it important to preserve cultural identities in a multicultural society?" },
-        { name: "New York's High Line", wikiTitle: "High Line", describePrompt: "Describe what you see in the picture. What is unusual about this park?", discussPrompt: "Why do cities need green spaces?" },
-        { name: "Brooklyn Bridge", wikiTitle: "Brooklyn Bridge", describePrompt: "Describe what you can see in the picture. What materials and shapes can you identify?", discussPrompt: "Why do you think people find historic structures like bridges important to maintain?" },
-        { name: "Times Square", wikiTitle: "Times Square", describePrompt: "Describe what you can see in the picture. What words would you use to describe the atmosphere?", discussPrompt: "Do you think cities should have places like this, or is it too commercial?" },
-        { name: "Statue of Liberty", wikiTitle: "Statue of Liberty", describePrompt: "Describe what you can see in the picture. What symbols or details do you notice?", discussPrompt: "The Statue of Liberty is a symbol of freedom. Do you think it still represents these values today?" }
+        {
+          name: "Grand Canyon",
+          wikiTitle: "Grand Canyon",
+          describePrompt: "Describe what you can see in the picture. What colours, shapes and landscapes can you spot?",
+          discussPrompt: "Would you like to visit the Grand Canyon? What would you do there and why is it important to protect national parks like this?"
+        },
+        {
+          name: "Death Valley",
+          wikiTitle: "Death Valley",
+          describePrompt: "Describe the landscape in the picture. What makes this place look extreme or unusual?",
+          discussPrompt: "Death Valley is one of the hottest places on Earth. Why do you think people visit dangerous places like this, and should there be limits on tourism there?"
+        },
+        {
+          name: "Immigrants in NYC",
+          wikiTitle: "Ellis Island",
+          describePrompt: "Describe what you can see in the picture. Who do you think the people are and where might they be going?",
+          discussPrompt: "New York City was built by immigrants from all over the world. What are the advantages and challenges of living in such a multicultural city?"
+        },
+        {
+          name: "Ground Zero Memorial",
+          wikiTitle: "National September 11 Memorial & Museum",
+          describePrompt: "Describe what you see in the picture. What kind of place do you think this is and what atmosphere does it have?",
+          discussPrompt: "Why is it important to remember tragic historical events? How should societies honour victims of tragedies?"
+        },
+        {
+          name: "Empire State Building",
+          wikiTitle: "Empire State Building",
+          describePrompt: "Describe what you can see in the picture. What stands out most about this building and the skyline around it?",
+          discussPrompt: "The Empire State Building is one of the most famous skyscrapers in the world. Why do you think people are so fascinated by very tall buildings?"
+        },
+        {
+          name: "Little Italy & Chinatown",
+          wikiTitle: "Little Italy, Manhattan",
+          describePrompt: "Describe what you see in the picture. What details tell you about the culture of this neighbourhood?",
+          discussPrompt: "Neighbourhoods like Little Italy and Chinatown keep immigrant cultures alive in a big city. Why is it important to preserve cultural identities in a multicultural society?"
+        },
+        {
+          name: "New York's High Line",
+          wikiTitle: "High Line",
+          describePrompt: "Describe what you see in the picture. What is unusual about this park and its location?",
+          discussPrompt: "The High Line is an old railway turned into a green park above the streets. Why do cities need green spaces, and how can old structures be given a new purpose?"
+        },
+        {
+          name: "Brooklyn Bridge",
+          wikiTitle: "Brooklyn Bridge",
+          describePrompt: "Describe what you can see in the picture. What materials and shapes can you identify?",
+          discussPrompt: "The Brooklyn Bridge was a great feat of engineering when it was built. Why do you think people find historic structures like bridges important to maintain?"
+        },
+        {
+          name: "Times Square",
+          wikiTitle: "Times Square",
+          describePrompt: "Describe what you can see in the picture. What words would you use to describe the atmosphere?",
+          discussPrompt: "Times Square is famous for its bright lights and non-stop activity. Do you think cities should have places like this, or is it too commercial and overwhelming?"
+        },
+        {
+          name: "Statue of Liberty",
+          wikiTitle: "Statue of Liberty",
+          describePrompt: "Describe what you can see in the picture. What symbols or details do you notice?",
+          discussPrompt: "The Statue of Liberty is a symbol of freedom and welcome. Do you think it still represents these values today? Why or why not?"
+        },
+        {
+          name: "Grand Central Terminal",
+          wikiTitle: "Grand Central Terminal",
+          describePrompt: "Describe what you see in the picture. What details tell you this is a busy, important place?",
+          discussPrompt: "Grand Central Terminal is not just a train station — it is also a cultural landmark. Should historic public buildings be kept as they are, or is it okay to modernise them?"
+        },
+        {
+          name: "Macy's Department Store",
+          wikiTitle: "Macy's",
+          describePrompt: "Describe what you can see in the picture. What kind of place is this and what clues do you see?",
+          discussPrompt: "Macy's is one of the most famous department stores in the world. Do you prefer shopping in big stores or online? What are the pros and cons of each?"
+        }
       ],
       dialogues: [
-        { topic: "Travelling in New York City", situation: "You and your partner are planning a three-day trip to New York City. You have a list of places to visit but can only choose four.", tasks: ["Talk about the pros and cons of each place.", "Agree on the four places both of you want to visit."], options: ["Statue of Liberty", "Times Square at night", "Brooklyn Bridge walk", "Grand Central Terminal", "The High Line", "Ground Zero Memorial"] }
+        {
+          topic: "Travelling in New York City",
+          situation: "You and your partner are planning a three-day trip to New York City. You have a list of places to visit but can only choose four. You want to make the most of your time.",
+          tasks: ["Talk about the pros and cons of each place.", "Agree on the four places both of you want to visit."],
+          options: ["Statue of Liberty", "Times Square at night", "Brooklyn Bridge walk", "Grand Central Terminal", "The High Line", "Ground Zero Memorial"]
+        },
+        {
+          topic: "Protecting America's National Parks",
+          situation: "Your class is preparing a presentation about America's national parks. You need to agree on the two most important reasons to protect them.",
+          tasks: ["Discuss the pros and cons of the different reasons.", "Agree on the two most important reasons to include in your presentation."],
+          options: ["Protecting wildlife", "Preserving natural beauty", "Tourism and the economy", "Climate change research", "Cultural heritage", "Outdoor education for young people"]
+        },
+        {
+          topic: "Life in New York City",
+          situation: "A German exchange student is asking you about life in New York City and whether they should move there for a year. You and your partner must give advice.",
+          tasks: ["Discuss the pros and cons of living in New York City.", "Agree on the two best pieces of advice to give the student."],
+          options: ["Use the subway", "Explore different neighbourhoods", "Visit free museums", "Try street food", "Go to a Broadway show", "Walk across the Brooklyn Bridge"]
+        }
       ]
     },
     {
       name: "California, School & Volunteering",
       subtopics: [
-        { name: "Walk of Fame", wikiTitle: "Hollywood Walk of Fame", describePrompt: "Describe what you can see in the picture. What details tell you where this place is?", discussPrompt: "Do you think celebrities deserve this
+        {
+          name: "Walk of Fame – Los Angeles",
+          wikiTitle: "Hollywood Walk of Fame",
+          describePrompt: "Describe what you can see in the picture. What details tell you where this place is?",
+          discussPrompt: "The Walk of Fame celebrates famous actors, musicians and directors. Do you think celebrities deserve this kind of recognition, or should we celebrate other kinds of people?"
+        },
+        {
+          name: "Volunteering around the world",
+          wikiTitle: "Volunteering",
+          describePrompt: "Describe what the people in the picture are doing. What do you think their goal is?",
+          discussPrompt: "Many young people choose to volunteer abroad for a year. What are the advantages and disadvantages, and would you consider doing it?"
+        },
+        {
+          name: "Senior High and Junior High",
+          wikiTitle: "High school (North America)",
+          describePrompt: "Describe what you can see in the picture. What kind of building is this and how does it compare to your school?",
+          discussPrompt: "American high schools look very different from German schools. What do you think are the biggest differences between school life in the USA and in Germany?"
+        },
+        {
+          name: "School Rules in the USA",
+          wikiTitle: "School uniforms in the United States",
+          describePrompt: "Describe what you can see in the picture. What do the students look like and what does this tell you about their school?",
+          discussPrompt: "Some American schools have strict rules like uniforms and dress codes. Do you think strict school rules help students learn better, or do they limit personal freedom?"
+        },
+        {
+          name: "Pledge of Allegiance",
+          wikiTitle: "Pledge of Allegiance",
+          describePrompt: "Describe what the people in the picture are doing. What do their gestures and expressions tell you?",
+          discussPrompt: "American students say the Pledge of Allegiance every morning at school. Do you think it is a good idea for schools to include national rituals like this? Why or why not?"
+        },
+        {
+          name: "Mount Rushmore",
+          wikiTitle: "Mount Rushmore",
+          describePrompt: "Describe what you can see in the picture. Who or what is shown, and where do you think this is?",
+          discussPrompt: "Mount Rushmore was carved into land that was sacred to Native Americans. Do you think it is right to build national monuments on such land? How should countries deal with difficult parts of their history?"
+        },
+        {
+          name: "Native American Reservations",
+          wikiTitle: "Indian reservation",
+          describePrompt: "Describe what you can see in the picture. What does the landscape look like and what do you think life is like here?",
+          discussPrompt: "Native Americans were forced onto reservations after European settlers took their land. How do you think the USA should address this injustice today?"
+        },
+        {
+          name: "South Dakota – The Midwest",
+          wikiTitle: "Badlands National Park",
+          describePrompt: "Describe what you see in the picture. How is this landscape different from where you live?",
+          discussPrompt: "The American Midwest is very different from big cities like New York or Los Angeles. What do you think life is like in a less populated part of the USA, and would you like to live there?"
+        },
+        {
+          name: "Schools in the USA",
+          wikiTitle: "Education in the United States",
+          describePrompt: "Describe what you can see in the picture. What kind of school environment does this look like?",
+          discussPrompt: "In the USA, school sports and clubs are a very big part of school life. Do you think schools should put so much focus on activities outside the classroom?"
+        }
+      ],
+      dialogues: [
+        {
+          topic: "Travelling in California",
+          situation: "You and your friend are planning a trip to California. You must decide on two activities you want to do together. You cannot do everything, so you need to discuss and agree.",
+          tasks: ["Talk about the pros and cons of each activity.", "Agree on the two activities both of you want to do."],
+          options: ["Finding stars on the Walk of Fame", "Skating in Venice Beach", "Going surfing", "Visiting a Marine Reserve", "Meeting celebrities at a hotel", "Hiking in the desert"]
+        },
+        {
+          topic: "High School Life",
+          situation: "Your school wants to promote healthy lifestyles. The headmaster published different ideas to implement. You and your partner must discuss and make a recommendation.",
+          tasks: ["Discuss the pros and cons of the different options.", "Agree on two options you can recommend to the headmaster."],
+          options: ["Daily sport before classes", "Only healthy snacks in the cafeteria", "Cooking classes as a school subject", "Mental health club", "Peer groups for stress management", "School-wide fitness events"]
+        },
+        {
+          topic: "Improving School Life",
+          situation: "The headmaster wants to improve school life and asked students to suggest ideas from American high schools that could be introduced. You and your partner must agree on two ideas.",
+          tasks: ["Talk about the pros and cons of these school life aspects.", "Agree on the two aspects both of you want to recommend for your school."],
+          options: ["Driving lessons during school time", "Pledge to the flag each morning", "Free choice of school subjects", "School clubs for every interest", "Supporting school sports teams", "School dances and proms"]
+        },
+        {
+          topic: "Volunteering Abroad",
+          situation: "Your class is organising a volunteering project abroad. You need to agree on the most important things to consider before going.",
+          tasks: ["Discuss the pros and cons of volunteering abroad.", "Agree on the two most important things to prepare before going."],
+          options: ["Learning the local language", "Researching the culture", "Fundraising before you go", "Choosing the right organisation", "Preparing for culture shock", "Staying in touch with family"]
+        }
+      ]
+    }
+  ]
+};
+
+// ── Image loading via Wikipedia pageimages API (CORS-safe) ──
+const imageCache = {};
+
+async function loadWikipediaImage(wikiTitle) {
+  if (imageCache[wikiTitle] !== undefined) return imageCache[wikiTitle];
+  try {
+    const url = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(wikiTitle)}&prop=pageimages&pithumbsize=640&format=json&origin=*`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error();
+    const d = await r.json();
+    const pages = Object.values(d.query?.pages || {});
+    const src = pages[0]?.thumbnail?.source || null;
+    imageCache[wikiTitle] = src;
+    return src;
+  } catch(_) {
+    imageCache[wikiTitle] = null;
+    return null;
+  }
+}
+
+// ── State ──
+let selectedTopicIdx = null;
+let currentPartner = 'A';
+let partnerADone = false;
+const timers = {};
+
+// ── Landing ──
+function selectTopic(idx) {
+  selectedTopicIdx = idx;
+  document.querySelectorAll('.topic-card').forEach(c => c.classList.remove('selected'));
+  document.querySelector(`[data-topic="${idx}"]`).classList.add('selected');
+  document.getElementById('startBtn').disabled = false;
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+async function startExam() {
+  if (selectedTopicIdx === null) return;
+  const topic = CATALOGUE.topics[selectedTopicIdx];
+  const shuffled = [...topic.subtopics].sort(() => Math.random() - 0.5);
+  const subA = shuffled[0];
+  const subB = shuffled[1];
+  const dialogue = topic.dialogues[Math.floor(Math.random() * topic.dialogues.length)];
+
+  // Preload both images in parallel (non-blocking — UI shows spinner placeholder)
+  buildExamUI(subA, subB, dialogue);
+  showScreen('exam');
+
+  // Load images after UI is visible
+  loadWikipediaImage(subA.wikiTitle).then(src => setImage('imgA', src, subA.name));
+  loadWikipediaImage(subB.wikiTitle).then(src => setImage('imgB', src, subB.name));
+}
+
+function setImage(imgId, src, name) {
+  const el = document.getElementById(imgId);
+  if (!el) return;
+  if (src) {
+    el.src = src;
+    el.style.display = 'block';
+    el.parentElement.classList.remove('no-image-state');
+  } else {
+    el.parentElement.innerHTML = `<div class="no-image">No image found — describe the topic from what you know.</div>`;
+  }
+}
+
+// ── Exam UI ──
+function buildExamUI(subA, subB, dialogue) {
+  document.getElementById('subtopicBadge').textContent = '📍 ' + subA.name + ' & ' + subB.name;
+  document.getElementById('examTitle').textContent = 'Speaking Practice';
+  document.getElementById('partnerAContent').innerHTML = buildPartnerContent('A', subA);
+  document.getElementById('partnerBContent').innerHTML = buildPartnerContent('B', subB);
+
+  const tid = 'dlg_' + Date.now();
+  const optHtml = dialogue.options.map(o => `<div class="option-pill">${o}</div>`).join('');
+  const taskHtml = dialogue.tasks.map((t,i) => `
+    <div class="dialogue-task-item"><div class="task-dot">${i+1}</div><span>${t}</span></div>`).join('');
+
+  document.getElementById('dialogueContent').innerHTML = `
+    <div class="dialogue-block">
+      <div class="dialogue-header"><span>🗣 Dialogue — ${dialogue.topic}</span></div>
+      <div class="dialogue-body">
+        <p class="dl-label">Situation</p>
+        <div class="dialogue-situation">${dialogue.situation}</div>
+        <p class="dl-label">Tasks</p>
+        <div style="margin-bottom:1rem;">${taskHtml}</div>
+        <p class="dl-label">Options — discuss these together</p>
+        <div class="options-grid">${optHtml}</div>
+      </div>
+    </div>
+    ${timerHtml(tid, 420, '7 minutes dialogue time')}`;
+}
+
+function buildPartnerContent(partner, sub) {
+  const imgId = 'img' + partner;
+  const tid = partner + '_' + Date.now();
+  const wikiLink = `https://en.wikipedia.org/wiki/${encodeURIComponent(sub.wikiTitle)}`;
+  return `
+    <div class="image-wrapper" id="imgWrapper${partner}">
+      <img id="${imgId}" src="" alt="${sub.name}" style="display:none"
+           onerror="this.parentElement.innerHTML='<div class=no-image>No image available.</div>'">
+    </div>
+    <p class="image-credit">📷 <a href="${wikiLink}" target="_blank">${sub.name}</a> — Wikipedia</p>
+    <div class="task-card">
+      <div class="task-card-header"><div class="task-number">1</div><span>Describe the picture</span></div>
+      <div class="task-card-body"><p>${sub.describePrompt}</p></div>
+    </div>
+    <div class="task-card">
+      <div class="task-card-header"><div class="task-number">2</div><span>Discuss</span></div>
+      <div class="task-card-body"><p>${sub.discussPrompt}</p></div>
+    </div>
+    ${timerHtml(tid, 180, '3 minutes speaking time')}`;
+}
+
+// ── Timer ──
+function timerHtml(id, total, label) {
+  return `<div class="timer-block">
+    <div class="timer-display" id="td_${id}">${fmt(total)}</div>
+    <div class="timer-controls">
+      <span class="timer-label">⏱ ${label}</span>
+      <div class="timer-btns">
+        <button class="timer-btn tbtn-start" id="tb_${id}" onclick="toggleTimer('${id}',${total})">▶ Start</button>
+        <button class="timer-btn tbtn-reset" onclick="resetTimer('${id}',${total})">↺ Reset</button>
+      </div>
+      <div class="timer-progress"><div class="timer-bar" id="tbar_${id}" style="width:100%"></div></div>
+    </div>
+  </div>`;
+}
+function fmt(s){return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;}
+function toggleTimer(id,total){
+  if(!timers[id])timers[id]={remaining:total,total,running:false,interval:null};
+  const t=timers[id];
+  if(t.running){clearInterval(t.interval);t.running=false;document.getElementById('tb_'+id).textContent='▶ Resume';}
+  else{
+    if(t.remaining<=0)return;
+    t.running=true;document.getElementById('tb_'+id).textContent='⏸ Pause';
+    t.interval=setInterval(()=>{
+      t.remaining--;
+      const disp=document.getElementById('td_'+id),bar=document.getElementById('tbar_'+id);
+      if(!disp){clearInterval(t.interval);return;}
+      disp.textContent=fmt(t.remaining);
+      bar.style.width=(t.remaining/t.total*100)+'%';
+      if(t.remaining<=30){disp.classList.add('warning');bar.classList.add('warning');}
+      if(t.remaining<=0){clearInterval(t.interval);t.running=false;disp.textContent='Time!';disp.className='timer-display timesdone';document.getElementById('tb_'+id).textContent='✓ Done';}
+    },1000);
+  }
+}
+function resetTimer(id,total){
+  if(timers[id]){clearInterval(timers[id].interval);delete timers[id];}
+  const d=document.getElementById('td_'+id);if(d){d.textContent=fmt(total);d.className='timer-display';}
+  const b=document.getElementById('tbar_'+id);if(b){b.style.width='100%';b.className='timer-bar';}
+  const btn=document.getElementById('tb_'+id);if(btn)btn.textContent='▶ Start';
+}
+
+// ── Navigation ──
+function switchPartner(p){
+  currentPartner=p;
+  document.getElementById('partnerAContent').style.display=p==='A'?'block':'none';
+  document.getElementById('partnerBContent').style.display=p==='B'?'block':'none';
+  document.getElementById('tabA').className='partner-tab'+(p==='A'?' active':(partnerADone?' done':''));
+  document.getElementById('tabB').className='partner-tab'+(p==='B'?' active':'');
+  const btn=document.getElementById('monoNextBtn');
+  if(p==='A'){btn.textContent='Partner B is next →';btn.onclick=monoNext;}
+  else{btn.textContent='Continue to Dialogue →';btn.onclick=showDialogue;}
+}
+function monoNext(){partnerADone=true;switchPartner('B');}
+function showDialogue(){
+  document.getElementById('monologueSection').style.display='none';
+  document.getElementById('dialogueSection').style.display='block';
+  document.getElementById('phasePill').textContent='Dialogue';
+  document.getElementById('phasePill').className='phase-pill phase-dialogue';
+}
+function showDone(){showScreen('done');}
+function restartExam(){
+  Object.values(timers).forEach(t=>clearInterval(t.interval));
+  for(const k in timers)delete timers[k];
+  selectedTopicIdx=null;currentPartner='A';partnerADone=false;
+  document.querySelectorAll('.topic-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('startBtn').disabled=true;
+  document.getElementById('monologueSection').style.display='block';
+  document.getElementById('dialogueSection').style.display='none';
+  document.getElementById('phasePill').textContent='Monologue';
+  document.getElementById('phasePill').className='phase-pill phase-monologue';
+  document.getElementById('partnerAContent').innerHTML='';
+  document.getElementById('partnerBContent').innerHTML='';
+  document.getElementById('partnerBContent').style.display='none';
+  document.getElementById('partnerAContent').style.display='block';
+  document.getElementById('tabA').className='partner-tab active';
+  document.getElementById('tabB').className='partner-tab';
+  document.getElementById('monoNextBtn').textContent='Partner B is next →';
+  document.getElementById('monoNextBtn').onclick=monoNext;
+  showScreen('landing');
+}
+</script>
+</body>
+</html>
