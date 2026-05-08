@@ -156,9 +156,6 @@
 </div>
 
 <script>
-// All images are loaded lazily via Wikipedia's pageimages API (CORS-safe, origin=* supported).
-// This avoids hotlinking problems: we request a fresh thumbnail URL at runtime.
-
 const CATALOGUE = {
   topics: [
     {
@@ -166,73 +163,73 @@ const CATALOGUE = {
       subtopics: [
         {
           name: "Grand Canyon",
-          wikiTitle: "Grand Canyon",
+          localImage: "images/grand-canyon.jpeg",
           describePrompt: "Describe what you can see in the picture. What colours, shapes and landscapes can you spot?",
           discussPrompt: "Would you like to visit the Grand Canyon? What would you do there and why is it important to protect national parks like this?"
         },
         {
           name: "Death Valley",
-          wikiTitle: "Death Valley",
+          localImage: "images/death-valley.JPEG",
           describePrompt: "Describe the landscape in the picture. What makes this place look extreme or unusual?",
           discussPrompt: "Death Valley is one of the hottest places on Earth. Why do you think people visit dangerous places like this, and should there be limits on tourism there?"
         },
         {
           name: "Immigrants in NYC",
-          wikiTitle: "Ellis Island",
+          localImage: "images/ellis-island.jpeg",
           describePrompt: "Describe what you can see in the picture. Who do you think the people are and where might they be going?",
           discussPrompt: "New York City was built by immigrants from all over the world. What are the advantages and challenges of living in such a multicultural city?"
         },
         {
           name: "Ground Zero Memorial",
-          wikiTitle: "National September 11 Memorial & Museum",
+          localImage: "images/ground-zero.jpeg",
           describePrompt: "Describe what you see in the picture. What kind of place do you think this is and what atmosphere does it have?",
           discussPrompt: "Why is it important to remember tragic historical events? How should societies honour victims of tragedies?"
         },
         {
           name: "Empire State Building",
-          wikiTitle: "Empire State Building",
+          localImage: "images/empire-state.jpeg",
           describePrompt: "Describe what you can see in the picture. What stands out most about this building and the skyline around it?",
           discussPrompt: "The Empire State Building is one of the most famous skyscrapers in the world. Why do you think people are so fascinated by very tall buildings?"
         },
         {
           name: "Little Italy & Chinatown",
-          wikiTitle: "Little Italy, Manhattan",
+          localImage: null,
           describePrompt: "Describe what you see in the picture. What details tell you about the culture of this neighbourhood?",
           discussPrompt: "Neighbourhoods like Little Italy and Chinatown keep immigrant cultures alive in a big city. Why is it important to preserve cultural identities in a multicultural society?"
         },
         {
           name: "New York's High Line",
-          wikiTitle: "High Line",
+          localImage: "images/high-line.jpeg",
           describePrompt: "Describe what you see in the picture. What is unusual about this park and its location?",
           discussPrompt: "The High Line is an old railway turned into a green park above the streets. Why do cities need green spaces, and how can old structures be given a new purpose?"
         },
         {
           name: "Brooklyn Bridge",
-          wikiTitle: "Brooklyn Bridge",
+          localImage: "images/brooklyn-bridge.jpeg",
           describePrompt: "Describe what you can see in the picture. What materials and shapes can you identify?",
           discussPrompt: "The Brooklyn Bridge was a great feat of engineering when it was built. Why do you think people find historic structures like bridges important to maintain?"
         },
         {
           name: "Times Square",
-          wikiTitle: "Times Square",
+          localImage: "images/times-square.jpeg",
           describePrompt: "Describe what you can see in the picture. What words would you use to describe the atmosphere?",
           discussPrompt: "Times Square is famous for its bright lights and non-stop activity. Do you think cities should have places like this, or is it too commercial and overwhelming?"
         },
         {
           name: "Statue of Liberty",
-          wikiTitle: "Statue of Liberty",
+          localImage: "images/statue-of-liberty.jpeg",
           describePrompt: "Describe what you can see in the picture. What symbols or details do you notice?",
           discussPrompt: "The Statue of Liberty is a symbol of freedom and welcome. Do you think it still represents these values today? Why or why not?"
         },
         {
           name: "Grand Central Terminal",
-          wikiTitle: "Grand Central Terminal",
+          localImage: "images/grand-central.jpeg",
           describePrompt: "Describe what you see in the picture. What details tell you this is a busy, important place?",
           discussPrompt: "Grand Central Terminal is not just a train station — it is also a cultural landmark. Should historic public buildings be kept as they are, or is it okay to modernise them?"
         },
         {
           name: "Macy's Department Store",
-          wikiTitle: "Macy's",
+          localImage: "images/macys.jepg.jpg",
           describePrompt: "Describe what you can see in the picture. What kind of place is this and what clues do you see?",
           discussPrompt: "Macy's is one of the most famous department stores in the world. Do you prefer shopping in big stores or online? What are the pros and cons of each?"
         }
@@ -263,55 +260,55 @@ const CATALOGUE = {
       subtopics: [
         {
           name: "Walk of Fame – Los Angeles",
-          wikiTitle: "Hollywood Walk of Fame",
+          localImage: null,
           describePrompt: "Describe what you can see in the picture. What details tell you where this place is?",
           discussPrompt: "The Walk of Fame celebrates famous actors, musicians and directors. Do you think celebrities deserve this kind of recognition, or should we celebrate other kinds of people?"
         },
         {
           name: "Volunteering around the world",
-          wikiTitle: "Volunteering",
+          localImage: null,
           describePrompt: "Describe what the people in the picture are doing. What do you think their goal is?",
           discussPrompt: "Many young people choose to volunteer abroad for a year. What are the advantages and disadvantages, and would you consider doing it?"
         },
         {
           name: "Senior High and Junior High",
-          wikiTitle: "High school (North America)",
+          localImage: null,
           describePrompt: "Describe what you can see in the picture. What kind of building is this and how does it compare to your school?",
           discussPrompt: "American high schools look very different from German schools. What do you think are the biggest differences between school life in the USA and in Germany?"
         },
         {
           name: "School Rules in the USA",
-          wikiTitle: "School uniforms in the United States",
+          localImage: null,
           describePrompt: "Describe what you can see in the picture. What do the students look like and what does this tell you about their school?",
           discussPrompt: "Some American schools have strict rules like uniforms and dress codes. Do you think strict school rules help students learn better, or do they limit personal freedom?"
         },
         {
           name: "Pledge of Allegiance",
-          wikiTitle: "Pledge of Allegiance",
+          localImage: null,
           describePrompt: "Describe what the people in the picture are doing. What do their gestures and expressions tell you?",
           discussPrompt: "American students say the Pledge of Allegiance every morning at school. Do you think it is a good idea for schools to include national rituals like this? Why or why not?"
         },
         {
           name: "Mount Rushmore",
-          wikiTitle: "Mount Rushmore",
+          localImage: null,
           describePrompt: "Describe what you can see in the picture. Who or what is shown, and where do you think this is?",
           discussPrompt: "Mount Rushmore was carved into land that was sacred to Native Americans. Do you think it is right to build national monuments on such land? How should countries deal with difficult parts of their history?"
         },
         {
           name: "Native American Reservations",
-          wikiTitle: "Indian reservation",
+          localImage: null,
           describePrompt: "Describe what you can see in the picture. What does the landscape look like and what do you think life is like here?",
           discussPrompt: "Native Americans were forced onto reservations after European settlers took their land. How do you think the USA should address this injustice today?"
         },
         {
           name: "South Dakota – The Midwest",
-          wikiTitle: "Badlands National Park",
+          localImage: null,
           describePrompt: "Describe what you see in the picture. How is this landscape different from where you live?",
           discussPrompt: "The American Midwest is very different from big cities like New York or Los Angeles. What do you think life is like in a less populated part of the USA, and would you like to live there?"
         },
         {
           name: "Schools in the USA",
-          wikiTitle: "Education in the United States",
+          localImage: null,
           describePrompt: "Describe what you can see in the picture. What kind of school environment does this look like?",
           discussPrompt: "In the USA, school sports and clubs are a very big part of school life. Do you think schools should put so much focus on activities outside the classroom?"
         }
@@ -346,25 +343,7 @@ const CATALOGUE = {
   ]
 };
 
-// ── Image loading via Wikipedia pageimages API (CORS-safe) ──
-const imageCache = {};
-
-async function loadWikipediaImage(wikiTitle) {
-  if (imageCache[wikiTitle] !== undefined) return imageCache[wikiTitle];
-  try {
-    const url = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(wikiTitle)}&prop=pageimages&pithumbsize=640&format=json&origin=*`;
-    const r = await fetch(url);
-    if (!r.ok) throw new Error();
-    const d = await r.json();
-    const pages = Object.values(d.query?.pages || {});
-    const src = pages[0]?.thumbnail?.source || null;
-    imageCache[wikiTitle] = src;
-    return src;
-  } catch(_) {
-    imageCache[wikiTitle] = null;
-    return null;
-  }
-}
+// Images loaded from local images/ folder
 
 // ── State ──
 let selectedTopicIdx = null;
@@ -385,34 +364,17 @@ function showScreen(id) {
   document.getElementById(id).classList.add('active');
 }
 
-async function startExam() {
+function startExam() {
   if (selectedTopicIdx === null) return;
   const topic = CATALOGUE.topics[selectedTopicIdx];
   const shuffled = [...topic.subtopics].sort(() => Math.random() - 0.5);
   const subA = shuffled[0];
   const subB = shuffled[1];
   const dialogue = topic.dialogues[Math.floor(Math.random() * topic.dialogues.length)];
-
-  // Preload both images in parallel (non-blocking — UI shows spinner placeholder)
   buildExamUI(subA, subB, dialogue);
   showScreen('exam');
-
-  // Load images after UI is visible
-  loadWikipediaImage(subA.wikiTitle).then(src => setImage('imgA', src, subA.name));
-  loadWikipediaImage(subB.wikiTitle).then(src => setImage('imgB', src, subB.name));
 }
 
-function setImage(imgId, src, name) {
-  const el = document.getElementById(imgId);
-  if (!el) return;
-  if (src) {
-    el.src = src;
-    el.style.display = 'block';
-    el.parentElement.classList.remove('no-image-state');
-  } else {
-    el.parentElement.innerHTML = `<div class="no-image">No image found — describe the topic from what you know.</div>`;
-  }
-}
 
 // ── Exam UI ──
 function buildExamUI(subA, subB, dialogue) {
@@ -442,15 +404,12 @@ function buildExamUI(subA, subB, dialogue) {
 }
 
 function buildPartnerContent(partner, sub) {
-  const imgId = 'img' + partner;
   const tid = partner + '_' + Date.now();
-  const wikiLink = `https://en.wikipedia.org/wiki/${encodeURIComponent(sub.wikiTitle)}`;
+  const imgHtml = sub.localImage
+    ? `<div class="image-wrapper"><img src="${sub.localImage}" alt="${sub.name}" onerror="this.parentElement.innerHTML='<div class=no-image>Image coming soon.</div>'"></div>`
+    : `<div class="image-wrapper"><div class="no-image">📷 Image coming soon — describe the topic from what you know.</div></div>`;
   return `
-    <div class="image-wrapper" id="imgWrapper${partner}">
-      <img id="${imgId}" src="" alt="${sub.name}" style="display:none"
-           onerror="this.parentElement.innerHTML='<div class=no-image>No image available.</div>'">
-    </div>
-    <p class="image-credit">📷 <a href="${wikiLink}" target="_blank">${sub.name}</a> — Wikipedia</p>
+    ${imgHtml}
     <div class="task-card">
       <div class="task-card-header"><div class="task-number">1</div><span>Describe the picture</span></div>
       <div class="task-card-body"><p>${sub.describePrompt}</p></div>
