@@ -44,8 +44,8 @@
   .partner-tab{flex:1;padding:.7rem;border-radius:10px;border:1.5px solid var(--border);background:var(--card);font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .15s;color:var(--muted);}
   .partner-tab.active{background:var(--blue);color:white;border-color:var(--blue);}
   .partner-tab.done{background:var(--green-light);color:var(--green);border-color:var(--green);}
-  .image-wrapper{border-radius:12px;overflow:hidden;margin-bottom:.5rem;background:var(--bg);border:1.5px solid var(--border);max-height:280px;display:flex;align-items:center;justify-content:center;min-height:160px;}
-  .image-wrapper img{width:100%;max-height:280px;object-fit:cover;display:block;}
+  .image-wrapper{border-radius:12px;overflow:hidden;margin-bottom:.5rem;background:#000;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;}
+  .image-wrapper img{width:100%;height:auto;max-height:420px;object-fit:contain;display:block;}
   .no-image{padding:2rem;text-align:center;color:var(--muted);font-size:.9rem;}
   .image-credit{font-size:.72rem;color:var(--muted);text-align:right;margin-bottom:1rem;}
   .image-credit a{color:var(--muted);}
@@ -409,6 +409,7 @@ function buildPartnerContent(partner, sub) {
     ? `<div class="image-wrapper"><img src="${sub.localImage}" alt="${sub.name}" onerror="this.parentElement.innerHTML='<div class=no-image>Image coming soon.</div>'"></div>`
     : `<div class="image-wrapper"><div class="no-image">📷 Image coming soon — describe the topic from what you know.</div></div>`;
   return `
+    ${timerHtml(tid, 180, '3 minutes speaking time')}
     ${imgHtml}
     <div class="task-card">
       <div class="task-card-header"><div class="task-number">1</div><span>Describe the picture</span></div>
@@ -417,8 +418,7 @@ function buildPartnerContent(partner, sub) {
     <div class="task-card">
       <div class="task-card-header"><div class="task-number">2</div><span>Discuss</span></div>
       <div class="task-card-body"><p>${sub.discussPrompt}</p></div>
-    </div>
-    ${timerHtml(tid, 180, '3 minutes speaking time')}`;
+    </div>`;
 }
 
 // ── Timer ──
